@@ -22,7 +22,7 @@ typedef struct User {
 
 // Авторизирует пользователя, читая логин/пароль с консоли возвращая режим авторизации
 AuthMode auth(const char* filename);
-// Ищет юзера с по логину и возвращает успех поиска
+// Ищет юзера по логину и возвращает успех поиска
 bool find_user(FILE* file, User* user);
 // Парсит строку в структуру юзера, если логин совпадает с искомым
 bool parse_user_if_login(char* string, User* user);
