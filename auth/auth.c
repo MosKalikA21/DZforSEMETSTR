@@ -4,6 +4,7 @@
 #include <string.h>
 
 AuthMode auth(const char* filename) {
+    // Открываем файл с юзерами в режиме чтения
     FILE* file = fopen(filename, "r");
     if (!file) {
         return ERROR;
@@ -18,11 +19,13 @@ AuthMode auth(const char* filename) {
     printf("Введите пароль: ");
     scanf("%255s", password);
 
+    // Ищем юзера, если нашли сравниваем введенный и пароль из файла
     if (!find_user(file, &user) || strcmp(user.password, password)) {
         fclose(file);
         return ERROR;
     }
 
+    // Проверяем флаги доступа
     AuthMode mode;
     if (user.students_permission == 1 && user.books_permission == 1) {
         mode = ALL;
@@ -42,6 +45,7 @@ AuthMode auth(const char* filename) {
 bool find_user(FILE* file, User* user) {
     char buffer[512];
     while (fgets(buffer, 512, file)) {
+        // Если нашли нужного юзера, заканчиваем поиск
         if (parse_user_if_login(buffer, user)) {
             return true;
         }
@@ -57,6 +61,7 @@ bool parse_user_if_login(char* string, User* user) {
     snprintf(login, p-string+1, "%s", string);
     string = p+1;
 
+    // Если логин не совпадает с искомым прерываем процесс парсинга
     if (strcmp(user->login, login)) {
         return false;
     }
