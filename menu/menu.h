@@ -5,6 +5,6 @@
 
 bool run_book_menu(bool can_return);
 bool run_students_menu(bool can_return);
-bool run_all_menu();
+void run_all_menu();
 
 #endif //DIFFICULTY1_MENU_H

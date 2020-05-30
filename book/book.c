@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "book_list.h"
+#include "utils.h"
 
 BookList* read_books_from_file(const char* filename) {
     // Открываем файл с режимом на чтение, если не открылся возвращаем NULL
@@ -32,26 +33,16 @@ BookList* read_books_from_file(const char* filename) {
 Book parse_book(char* string) {
     Book book;
 
-    // Ищем подстроку ";" p - это указатель на первый символ ";" в строке
-    char* p = strstr(string, ";");
-    // Копируем строку в структуру книги (p-string+1 -- количество символов от начала строки до ";")
-    snprintf(book.isbn, p-string+1, "%s", string);
-    // Перемещаем указатель строки на следующий после ";" символ
-    string = p+1;
+    // Считываем строковые данные книги
+    string = read_csv_value(book.isbn, string);
+    string = read_csv_value(book.authors, string);
+    string = read_csv_value(book.title, string);
 
-    p = strstr(string, ";");
-    snprintf(book.authors, p-string+1, "%s", string);
-    string = p+1;
+    char buffer[16];
+    string = read_csv_value(buffer, string);
+    book.count = strtol(buffer, NULL, 10); // Конвертируем строку в int
 
-    p = strstr(string, ";");
-    snprintf(book.title, p-string+1, "%s", string);
-    string = p+1;
-
-    p = strstr(string, ";");
-    // Конвертируем строку в int. Число будет взято до первого невалидного символа (в данном случае ";") или конца строки
-    book.count = strtol(string, NULL, 10);
-    string = p+1;
-
+    read_csv_value(buffer, string);
     book.available = strtol(string, NULL, 10);
 
     return book;
@@ -102,21 +93,17 @@ void add_book_to_library(BookList* list) {
     Book book;
 
     printf("Введите ISBN: ");
-    fgets(book.isbn, 16, stdin);
-    // Проставляем нуль-терминант в последний символ строки, т.к. fgets записывает туда "\n"
-    book.isbn[strlen(book.isbn)-1] = 0;
+    read_value(book.isbn, 16);
     if (get_book_node_with_isbn(list, book.isbn)) {
         printf("Книга по данному ISBN уже имеется в библиотеке\n\n");
         return;
     }
 
     printf("Введите авторов: ");
-    fgets(book.authors, 256, stdin);
-    book.authors[strlen(book.authors)-1] = 0;
+    read_value(book.authors, 256);
 
     printf("Введите название: ");
-    fgets(book.title, 256, stdin);
-    book.title[strlen(book.title)-1] = 0;
+    read_value(book.title, 256);
 
     printf("Введите количество книг: ");
     scanf("%d", &book.count);

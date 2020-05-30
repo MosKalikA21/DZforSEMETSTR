@@ -104,7 +104,7 @@ bool run_students_menu(bool can_return) {
     return should_return;
 }
 
-bool run_all_menu() {
+void run_all_menu() {
     bool should_continue = true;
 
     while (should_continue) {

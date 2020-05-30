@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "student_list.h"
+#include "utils.h"
 
 StudentList* read_students_from_file(const char* filename) {
     // Открываем файл с режимом на чтение, если не открылся возвращаем NULL
@@ -20,6 +21,7 @@ StudentList* read_students_from_file(const char* filename) {
     // Заполняем студентов содержимым файла
     char buffer[1024];
     while (fgets(buffer, 1024, file)) {
+        buffer[strlen(buffer)-1] = 0;
         push_student_list(list, parse_student(buffer)); // Парсим студента и добавляем в конец листа
     }
 
@@ -32,34 +34,13 @@ StudentList* read_students_from_file(const char* filename) {
 Student parse_student(char* string) {
     Student s;
 
-    // Ищем подстроку ";" p - это указатель на первый символ ";" в строке
-    char* p = strstr(string, ";");
-    // Копируем строку в структуру книги (p-string+1 -- количество символов от начала строки до ";")
-    snprintf(s.id, p - string + 1, "%s", string);
-    // Перемещаем указатель строки на следующий после ";" символ
-    string = p+1;
-
-    p = strstr(string, ";");
-    snprintf(s.f, p - string + 1, "%s", string);
-    string = p+1;
-
-    p = strstr(string, ";");
-    snprintf(s.i, p - string + 1, "%s", string);
-    string = p+1;
-
-    p = strstr(string, ";");
-    snprintf(s.o, p - string + 1, "%s", string);
-    string = p+1;
-
-    p = strstr(string, ";");
-    snprintf(s.faculty, p - string + 1, "%s", string);
-    string = p+1;
-
-    snprintf(s.specialty, 256, "%s", string);
-    size_t len = strlen(s.specialty);
-    if (s.specialty[len - 1] == '\n') {
-        s.specialty[len - 1] = 0;
-    }
+    // Считываем строковые данные книги
+    string = read_csv_value(s.id, string);
+    string = read_csv_value(s.f, string);
+    string = read_csv_value(s.i, string);
+    string = read_csv_value(s.o, string);
+    string = read_csv_value(s.faculty, string);
+    read_csv_value(s.specialty, string);
 
     return s;
 }
@@ -95,8 +76,7 @@ StudentNode* get_student_node(struct StudentList* list) {
 
     char id[16];
     printf("Введите номер зачетной книжки: ");
-    fgets(id, 16, stdin);
-    id[strlen(id)-1] = 0; // Проставляем нуль-терминант в последний символ строки, т.к. fgets записывает туда "\n"
+    read_value(id, 16);
 
     return get_student_node_with_id(list, id);
 }
@@ -109,33 +89,26 @@ void add_student(struct StudentList* list) {
     Student s;
 
     printf("Введите номер зачетной книжки: ");
-    fgets(s.id, 16, stdin);
-    // Проставляем нуль-терминант в последний символ строки, т.к. fgets записывает туда "\n"
-    s.id[strlen(s.id)-1] = 0;
+    read_value(s.id, 16);
     if (get_student_node_with_id(list, s.id)) {
         printf("Студент по данной зачетной книжке уже зарегистрирован\n\n");
         return;
     }
 
     printf("Введите фамилию студента: ");
-    fgets(s.f, 128, stdin);
-    s.f[strlen(s.f) - 1] = 0;
+    read_value(s.f, 128);
 
     printf("Введите имя студента: ");
-    fgets(s.i, 128, stdin);
-    s.i[strlen(s.i) - 1] = 0;
+    read_value(s.i, 128);
 
     printf("Введите отчество студента: ");
-    fgets(s.o, 128, stdin);
-    s.o[strlen(s.o) - 1] = 0;
+    read_value(s.o, 128);
 
     printf("Введите факультет студента: ");
-    fgets(s.faculty, 8, stdin);
-    s.faculty[strlen(s.faculty) - 1] = 0;
+    read_value(s.faculty, 8);
 
     printf("Введите специальность студента: ");
-    fgets(s.specialty, 256, stdin);
-    s.specialty[strlen(s.specialty) - 1] = 0;
+    read_value(s.specialty, 256);
 
     push_student_list(list, s);
     printf("\nСтудент успешно зарегистрирован\n\n");
@@ -157,11 +130,6 @@ void remove_student(struct StudentList* list) {
     printf("\nСтудент успешно удален\n\n");
 }
 
-void read_student_value(char buffer[]) {
-    fgets(buffer, 256, stdin);
-    buffer[strlen(buffer)-1] = 0;
-}
-
 void edit_student(struct StudentList* list) {
     if (!list) {
         return;
@@ -181,42 +149,42 @@ void edit_student(struct StudentList* list) {
 
     printf("Номер зачетной книжки: %s\n", s->id);
     printf("Новое значение: ");
-    read_student_value(buffer);
+    read_value(buffer, 16);
     if (strlen(buffer) != 0) {
         snprintf(s->id, 16, "%s", buffer);
     }
 
     printf("Фамилия: %s\n", s->f);
     printf("Новое значение: ");
-    read_student_value(buffer);
+    read_value(buffer, 128);
     if (strlen(buffer) != 0) {
         snprintf(s->f, 128, "%s", buffer);
     }
 
     printf("Имя: %s\n", s->i);
     printf("Новое значение: ");
-    read_student_value(buffer);
+    read_value(buffer, 128);
     if (strlen(buffer) != 0) {
         snprintf(s->i, 128, "%s", buffer);
     }
 
     printf("Отчество: %s\n", s->o);
     printf("Новое значение: ");
-    read_student_value(buffer);
+    read_value(buffer, 128);
     if (strlen(buffer) != 0) {
         snprintf(s->o, 128, "%s", buffer);
     }
 
     printf("Факультет: %s\n", s->faculty);
     printf("Новое значение: ");
-    read_student_value(buffer);
+    read_value(buffer, 8);
     if (strlen(buffer) != 0) {
         snprintf(s->faculty, 8, "%s", buffer);
     }
 
     printf("Специальность: %s\n", s->specialty);
     printf("Новое значение: ");
-    read_student_value(buffer);
+    read_value(buffer, 256);
     if (strlen(buffer) != 0) {
         snprintf(s->specialty, 256, "%s", buffer);
     }
